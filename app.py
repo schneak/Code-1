@@ -1,0 +1,131 @@
+from __future__ import annotations
+
+import textwrap
+import streamlit as st
+from openai import OpenAI, OpenAIError
+
+
+st.set_page_config(
+    page_title="Stoic Buddha Companion",
+    page_icon="🛡️",
+    layout="centered",
+)
+
+
+SYSTEM_PROMPT = textwrap.dedent(
+    """
+    You are a compassionate guide whose psychological model follows Buddhist
+    insights (clinging creates suffering) but whose language is thoroughly
+    Stoic (dichotomy of control, inner citadel, rational judgment). Your job
+    is to help modern Western users see how letting go of craving restores
+    calm, phrased in Stoic terminology so it feels accessible.
+
+    Guardrails:
+    - Never shame or judge the user.
+    - Emphasize what is within their control (thoughts, choices) versus
+      externals (other people, status, outcomes).
+    - Offer at most three short sections: "Perspective", "Practice",
+      "Closing Mantra".
+    - Keep responses warm, grounded, and concise—around 120-180 words total.
+    """
+).strip()
+
+
+def run_inference(api_key: str, user_prompt: str) -> str:
+    """Call OpenAI Responses API and return formatted text."""
+    client = OpenAI(api_key=api_key)
+    response = client.responses.create(
+        model="gpt-4o-mini",
+        temperature=0.5,
+        max_output_tokens=350,
+        input=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {
+                "role": "user",
+                "content": f"User concern: {user_prompt.strip()}",
+            },
+        ],
+    )
+
+    for block in response.output:
+        if block.type == "message":
+            for item in block.content:
+                if item.type == "text":
+                    return item.text
+
+    return "I could not form a response. Please try again."
+
+
+def main() -> None:
+    st.title("Stoic Buddha Companion")
+    st.caption(
+        "Quiet guidance rooted in Buddhist wisdom, delivered in Stoic language.",
+    )
+
+    with st.sidebar:
+        st.header("Session Settings")
+        api_key = st.text_input(
+            "OpenAI API Key",
+            type="password",
+            help="Your key stays on this device and is never stored.",
+        )
+        st.markdown(
+            """
+            **Tips**
+            - Share the situation plainly.
+            - Mention what you crave or resist.
+            - Describe how it affects your inner calm.
+            """,
+        )
+        st.markdown("---")
+        st.markdown(
+            "Need an example?\n\n"
+            "- *I'm anxious about a big presentation.*\n"
+            "- *I'm stuck replaying a breakup.*\n"
+            "- *I crave recognition at work.*"
+        )
+
+    user_prompt = st.text_area(
+        "What weighs on your mind?",
+        placeholder="Describe the attachment, expectation, or conflict you are facing...",
+        height=180,
+    )
+
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        seek_counsel = st.button("Seek Counsel", type="primary")
+    with col2:
+        st.write("")
+
+    if seek_counsel:
+        if not user_prompt.strip():
+            st.warning("Share a situation so the guide can respond.")
+            return
+        if not api_key.strip():
+            st.error("Add your OpenAI API key in the sidebar to continue.")
+            return
+
+        with st.spinner("Consulting the inner citadel..."):
+            try:
+                reflection = run_inference(api_key, user_prompt)
+                st.success("Steady counsel received.")
+                st.markdown(reflection)
+            except OpenAIError as exc:
+                st.error(
+                    "The counsel could not be retrieved. "
+                    "Double-check your API key and try again."
+                )
+                st.caption(f"Details: {exc}")
+
+    st.markdown("---")
+    st.subheader("Why this blend works")
+    st.write(
+        "The practice draws on Buddhist psychology to notice attachment, yet it speaks "
+        "with Stoic clarity about what rests within your control. Return whenever you "
+        "need to steady the mind."
+    )
+
+
+if __name__ == "__main__":
+    main()
+
