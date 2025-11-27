@@ -33,13 +33,13 @@ SYSTEM_PROMPT = textwrap.dedent(
 
 
 def run_inference(api_key: str, user_prompt: str) -> str:
-    """Call OpenAI Responses API and return formatted text."""
+    """Call OpenAI Chat Completions API and return formatted text."""
     client = OpenAI(api_key=api_key)
-    response = client.responses.create(
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         temperature=0.5,
-        max_output_tokens=350,
-        input=[
+        max_tokens=350,
+        messages=[
             {"role": "system", "content": SYSTEM_PROMPT},
             {
                 "role": "user",
@@ -48,14 +48,13 @@ def run_inference(api_key: str, user_prompt: str) -> str:
         ],
     )
 
-    for block in response.output:
-        if block.type == "message":
-            for item in block.content:
-                if item.type == "text":
-                    return item.text
+    if response.choices:
+        message = response.choices[0].message
+        if message and message.content:
+            return message.content.strip()
 
     raise RuntimeError(
-        "OpenAI returned no text block.\n"
+        "OpenAI returned no completion.\n"
         f"{json.dumps(response.model_dump(), indent=2)[:1500]}"
     )
 
