@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import textwrap
 import streamlit as st
 from openai import OpenAI, OpenAIError
@@ -53,7 +54,10 @@ def run_inference(api_key: str, user_prompt: str) -> str:
                 if item.type == "text":
                     return item.text
 
-    return "I could not form a response. Please try again."
+    raise RuntimeError(
+        "OpenAI returned no text block.\n"
+        f"{json.dumps(response.model_dump(), indent=2)[:1500]}"
+    )
 
 
 def main() -> None:
@@ -110,12 +114,9 @@ def main() -> None:
                 reflection = run_inference(api_key, user_prompt)
                 st.success("Steady counsel received.")
                 st.markdown(reflection)
-            except OpenAIError as exc:
-                st.error(
-                    "The counsel could not be retrieved. "
-                    "Double-check your API key and try again."
-                )
-                st.caption(f"Details: {exc}")
+            except (OpenAIError, RuntimeError) as exc:
+                st.error("The counsel could not be retrieved.")
+                st.code(str(exc))
 
     st.markdown("---")
     st.subheader("Why this blend works")
