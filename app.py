@@ -65,6 +65,9 @@ def main() -> None:
         "Quiet guidance rooted in Buddhist wisdom, delivered in Stoic language.",
     )
 
+    if "messages" not in st.session_state:
+        st.session_state.messages: list[dict[str, str]] = []
+
     with st.sidebar:
         st.header("Session Settings")
         api_key = st.text_input(
@@ -108,14 +111,33 @@ def main() -> None:
             st.error("Add your OpenAI API key in the sidebar to continue.")
             return
 
+        user_message = user_prompt.strip()
+        st.session_state.messages.append(
+            {
+                "role": "user",
+                "content": user_message,
+            }
+        )
+
         with st.spinner("Consulting the inner citadel..."):
             try:
-                reflection = run_inference(api_key, user_prompt)
+                reflection = run_inference(api_key, user_message)
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": reflection,
+                    }
+                )
                 st.success("Steady counsel received.")
-                st.markdown(reflection)
             except (OpenAIError, RuntimeError) as exc:
                 st.error("The counsel could not be retrieved.")
                 st.code(str(exc))
+
+    chat_container = st.container()
+    with chat_container:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
 
     st.markdown("---")
     st.subheader("Why this blend works")
