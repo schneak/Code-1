@@ -1,6 +1,7 @@
 import streamlit as st
 import textwrap
 import json
+import logging
 from openai import OpenAI, OpenAIError
 
 # --- V2.0 UPGRADE: New Title & Icon ---
@@ -66,6 +67,17 @@ SYSTEM_PROMPT = textwrap.dedent(
     Guardrails: Your entire response must be warm, humble, and concise (150-200 words).
     """
 ).strip()
+
+# Load foundation wisdom from wisdom.txt if available
+try:
+    with open("wisdom.txt", "r", encoding="utf-8") as f:
+        wisdom_content = f.read().strip()
+        if wisdom_content:
+            SYSTEM_PROMPT += "\n\n### FOUNDATION WISDOM:\n" + wisdom_content
+except FileNotFoundError:
+    logging.warning("wisdom.txt not found. Continuing without foundation wisdom.")
+except Exception as e:
+    logging.warning(f"Error reading wisdom.txt: {e}. Continuing without foundation wisdom.")
 
 
 def run_inference(api_key: str, user_prompt: str) -> str:
