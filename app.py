@@ -84,7 +84,7 @@ def run_inference(api_key: str, user_prompt: str) -> str:
     """Call OpenAI Chat Completions API and return formatted text."""
     client = OpenAI(api_key=api_key)
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         temperature=0.6, # Slightly increased for more 'human' variance
         max_tokens=350,
         messages=[
