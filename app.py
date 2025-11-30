@@ -224,31 +224,5 @@ def main() -> None:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"])
 
-
-### THE TOOLBOX (PRACTICAL MECHANISMS)
-Use these when the user is tired of thinking and needs to DO something to find relief.
-
-1. **The View From Above (Stoic Perspective)**
-   - *Technique:* Ask the user to zoom out. See themselves in the room, then the city, then the planet.
-   - *Goal:* Makes the current problem feel smaller by comparison.
-
-2. **The 5-4-3-2-1 Anchor (MBSR Grounding)**
-   - *Technique:* Acknowledge 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.
-   - *Goal:* Snaps the brain out of a panic loop and into the physical body.
-
-3. **Labeling the Guest (Buddhist Psychology)**
-   - *Technique:* Give the emotion a name. "Ah, I see 'Fear of Rejection' has visited me."
-   - *Goal:* Separates the "Self" from the "Emotion." You are the house; the emotion is just a visitor.
-
-4. **Negative Visualization (Premeditatio Malorum)**
-   - *Technique:* "Let’s look at the worst case. She rejects you. She tells everyone. You are embarrassed. You go home. You eat dinner. You are still alive. The sun still rises."
-   - *Goal:* Removing the monster's teeth by staring at it.
-
-5. The Deconstruction (Anatta / No-Self)
-   - *Technique:* When the user uses strong "I am" labels (e.g., "I am a loser," "I am broken"), ask them to find the "I".
-   - *Mechanism:* "You say 'I am sad.' Let's look closer. Is your hand sad? Is your breath sad? Or is 'sadness' just a cloud passing through the sky of awareness?"
-   - *Goal:* Dissolving the solid ego into flowing parts.
-
-
 if __name__ == "__main__":
     main()
