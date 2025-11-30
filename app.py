@@ -255,13 +255,6 @@ def main() -> None:
             - Describe how it affects your inner calm.
             """,
         )
-        st.markdown("---")
-        st.markdown(
-            "Need an example?\n\n"
-            "- *I'm jobless for 6 months... shhiittt!!!*\n"
-            "- *I'm stuck replaying a breakup.*\n"
-            "- *I crave recognition at work.*"
-        )
 
     # Display chat history
     for message in st.session_state.messages:
