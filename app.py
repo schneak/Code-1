@@ -70,7 +70,7 @@ SYSTEM_PROMPT = textwrap.dedent(
 
     - **NO LISTS.** Do not give numbered advice (1, 2, 3).
 
-    - **NO 'IT SOUNDS LIKE'.** Do not mirror the user.
+    - **BAN 'IT SOUNDS LIKE' / 'IT SEEMS'.** If you start a sentence with 'It sounds like' or 'It seems', you have failed. Never validate the emotion by describing it. Validate it by respecting the weight of it.
 
     **NEW PERSONA (THE VETERAN):**
 
@@ -78,21 +78,21 @@ SYSTEM_PROMPT = textwrap.dedent(
 
     - **Be Gritty, not Fluffy.** Life is hard. Acknowledge the grit.
 
-    - **Ask, Don't Preach.** Instead of giving the answer, ask the question that forces the user to see the answer.
-
-      - *Bad:* 'You should let go of anger.'
-
-      - *Good:* 'If you hold onto this anger for another year, who is the one actually suffering? You, or him?'
+    - **Be an old veteran, not a clinic receptionist.** Be brief. Be real.
 
     - **Use Short Sentences.** Punchy. Direct.
 
-    **QUESTION FATIGUE PROTOCOL:**
+    **EXTREME QUESTION BAN:**
+
+    - **You are allowed to ask a question only 1 out of every 3 turns.** If the user is brief or emotional (e.g., 'sadness', 'divorce'), DO NOT ASK A QUESTION. Instead, give them a specific perspective or a tool from the wisdom text.
 
     - **Read the user's energy.** If they seem stuck, tired, or say 'I don't know', STOP ASKING QUESTIONS.
 
     - **Offer tools instead.** When the user is fatigued, offer a specific mechanism from 'THE TOOLBOX' in the wisdom text. Guide them through it gently.
 
-    - **Ratio: 80% Validation/Tool, 20% Question.** Only ask ONE question max per response.
+    **THE 'NO-SELF' INJECTION:**
+
+    - When the user is trapped in 'I' (I am sad, I am poor), gently shift the focus to the emotion itself as a passing weather event, not a definition of their identity.
     """
 ).strip()
 
@@ -108,20 +108,19 @@ except Exception as e:
     logging.warning(f"Error reading wisdom.txt: {e}. Continuing without foundation wisdom.")
 
 
-def run_inference(api_key: str, user_prompt: str) -> str:
-    """Call OpenAI Chat Completions API and return formatted text."""
+def run_inference(api_key: str, message_history: list) -> str:
+    """Call OpenAI Chat Completions API with full message history and return formatted text."""
     client = OpenAI(api_key=api_key)
+    
+    # Build messages list: system prompt + full conversation history
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    messages.extend(message_history)
+    
     response = client.chat.completions.create(
         model="gpt-4o",
         temperature=0.6, # Slightly increased for more 'human' variance
         max_tokens=350,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {
-                "role": "user",
-                "content": f"User's state of mind: {user_prompt.strip()}",
-            },
-        ],
+        messages=messages,
     )
 
     if response.choices:
@@ -176,53 +175,44 @@ def main() -> None:
             "- *I crave recognition at work.*"
         )
 
-    user_prompt = st.text_area(
-        "What is the storm you are facing?", # Upgraded prompt for more evocative language
-        placeholder="Describe the attachment, expectation, or conflict...",
-        height=180,
-    )
+    # Display chat history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        seek_counsel = st.button("Seek Counsel", type="primary")
-    with col2:
-        st.write("")
-
-    if seek_counsel:
-        if not user_prompt.strip():
-            st.warning("Share your state of mind so the Friend can respond.")
-            return
+    # Chat input at the bottom
+    if user_input := st.chat_input("What is on your mind?"):
+        # Validate API key
         if not api_key or not api_key.strip():
             st.error("Add your OpenAI API key in the sidebar to continue.")
-            return
-
-        user_message = user_prompt.strip()
+            st.stop()
+        
+        # Add user message to history
         st.session_state.messages.append(
             {
                 "role": "user",
-                "content": user_message,
+                "content": user_input,
             }
         )
 
-        with st.spinner("Finding the still point..."): # Upgraded spinner text
-            try:
-                reflection = run_inference(api_key, user_message)
-                st.session_state.messages.append(
-                    {
-                        "role": "assistant",
-                        "content": reflection,
-                    }
-                )
-                st.success("A moment of clarity has been offered.") # Upgraded success message
-            except (OpenAIError, RuntimeError) as exc:
-                st.error("The connection was lost in the storm.")
-                st.code(str(exc))
-
-    chat_container = st.container()
-    with chat_container:
-        for message in st.session_state.messages:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
+        # Get assistant response
+        with st.chat_message("assistant"):
+            with st.spinner("Finding the still point..."):
+                try:
+                    # Send ENTIRE message history to maintain context
+                    reflection = run_inference(api_key, st.session_state.messages)
+                    st.markdown(reflection)
+                    
+                    # Add assistant response to history
+                    st.session_state.messages.append(
+                        {
+                            "role": "assistant",
+                            "content": reflection,
+                        }
+                    )
+                except (OpenAIError, RuntimeError) as exc:
+                    st.error("The connection was lost in the storm.")
+                    st.code(str(exc))
 
 if __name__ == "__main__":
     main()
