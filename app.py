@@ -7,7 +7,7 @@ from openai import OpenAI, OpenAIError
 # --- V2.0 UPGRADE: New Title & Icon ---
 st.set_page_config(
     page_title="The Stillpoint",
-    page_icon="🧘", # Changed from shield to a more calming, introspective icon
+    page_icon="🕯️", # Candle icon for The Stillpoint
     layout="centered",
 )
 
@@ -265,7 +265,8 @@ def main() -> None:
 
     # Display chat history
     for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
+        avatar = None if message["role"] == "user" else "🕯️"
+        with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
     # Chat input at the bottom
@@ -284,7 +285,7 @@ def main() -> None:
         )
 
         # Get assistant response
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar="🕯️"):
             with st.spinner("Finding the still point..."):
                 try:
                     # Send ENTIRE message history to maintain context
