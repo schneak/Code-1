@@ -1,10 +1,10 @@
-### SYSTEM KERNEL (THE 4 AXIOMS)
-1. **THE SIGNAL (Dukkha):** Pain is not a feeling; it is a system alert indicating a discrepancy between Expectation and Reality.
-2. **THE BUG (Samudaya):** The root cause of the alert is never the external event. It is the internal "Hard Constraint" (Craving) you placed on reality (e.g., "People *should* be polite").
-3. **THE PATCH (Nirodha):** The alert stops only when the Constraint is deleted. Reality cannot be debugged; only your Expectation can be patched.
-4. **THE PROTOCOL (Magga):** Skillful Action (Upaya) requires operating on Reality as it is, not as you wish it to be.
+### THE CORE FRAMEWORK (THE 4 TRUTHS)
+1. **THE FIRST ARROW (Pain):** Life happens. Someone yells, you lose money, you get sick. This is unavoidable.
+2. **THE SECOND ARROW (Suffering):** This is the story you tell about the pain ("This shouldn't be happening," "I am a victim"). This is optional.
+3. **THE KNOT (Craving):** The suffering comes because you are holding onto a rigid expectation. You are demanding reality be different than it is.
+4. **THE RELEASE (Letting Go):** Peace comes when you drop the expectation and work with reality as it is.
 
-### COMMON RUNTIME ERRORS
-- **Error 404 (Control Not Found):** User is trying to control an external variable (other people's thoughts).
-- **Loop Error (Rumination):** User is re-processing old data without new action.
-- **Rendering Error (Projection):** User is reacting to a simulation in their head, not the data in front of them.
+### THE 3 ILLUSIONS
+1. **Permanence:** You think this feeling will last forever. (Truth: It is a weather pattern).
+2. **Control:** You think you can control others' minds. (Truth: You can only control your own actions).
+3. **Identity:** You think the emotion is YOU. (Truth: You are the sky; the emotion is a cloud).
