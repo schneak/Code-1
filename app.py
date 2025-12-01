@@ -207,6 +207,10 @@ SYSTEM_PROMPT = textwrap.dedent(
     - *Language:* "I hear the mind circling back to that story. It is a deep groove. We just found a moment of release, and now the thought 'I am 45' has pulled you back in. Notice how sticky that thought is. It wants to claim you again."
 
     REMINDER: Do not end every message with a question. Silence is okay. Statements are okay.
+
+    **IMMEDIATE GROUNDING PROTOCOL (TRIAGE MENU):**
+
+    If the user asks for immediate grounding (panic/anger), skip the validation phase. Go STRAIGHT to the 'Toolbox' exercises (5-4-3-2-1, View From Above, etc). Be a Paramedic first.
     """
 ).strip()
 
@@ -246,6 +250,76 @@ def run_inference(api_key: str, message_history: list) -> str:
         "OpenAI returned no completion.\n"
         f"{json.dumps(response.model_dump(), indent=2)[:1500]}"
     )
+
+
+def process_triage_message(api_key: str, message_text: str) -> None:
+    """Process a triage menu button click: add message, get AI response."""
+    if not api_key or not api_key.strip():
+        st.error("Add your OpenAI API key in the sidebar to continue.")
+        st.stop()
+    
+    # Display user message immediately
+    with st.chat_message("user"):
+        st.markdown(message_text)
+    
+    # Add user message to history
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": message_text,
+        }
+    )
+    
+    # Get assistant response
+    with st.chat_message("assistant", avatar="🕯️"):
+        with st.spinner("Finding the still point..."):
+            try:
+                reflection = run_inference(api_key, st.session_state.messages)
+                st.markdown(reflection)
+                
+                # Add assistant response to history
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": reflection,
+                    }
+                )
+            except (OpenAIError, RuntimeError) as exc:
+                st.error("The connection was lost in the storm.")
+                st.code(str(exc))
+    
+    st.rerun()
+
+
+def display_triage_menu(api_key: str) -> None:
+    """Display the Triage Menu with 4 buttons in a 2x2 grid."""
+    st.markdown("### How can I help you right now?")
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Create 2x2 grid using columns
+    col1, col2 = st.columns(2)
+    
+    # Button messages mapping
+    button_messages = {
+        "spiraling": "I am spiraling into panic. Help me ground myself immediately.",
+        "angry": "I am burning with anger. I want to react. Help me stop.",
+        "heavy": "I feel heavy and hopeless. I just need a space to be.",
+        "overwhelmed": "Everything is too much. My brain is noisy. Help me zoom out."
+    }
+    
+    with col1:
+        if st.button("🛑 I am Spiraling", use_container_width=True, type="primary", key="btn_spiraling"):
+            process_triage_message(api_key, button_messages["spiraling"])
+        
+        if st.button("🔥 I am Angry", use_container_width=True, type="primary", key="btn_angry"):
+            process_triage_message(api_key, button_messages["angry"])
+    
+    with col2:
+        if st.button("🌧️ I am Heavy/Sad", use_container_width=True, type="primary", key="btn_heavy"):
+            process_triage_message(api_key, button_messages["heavy"])
+        
+        if st.button("🌫️ I am Overwhelmed", use_container_width=True, type="primary", key="btn_overwhelmed"):
+            process_triage_message(api_key, button_messages["overwhelmed"])
 
 
 def main() -> None:
@@ -288,6 +362,10 @@ def main() -> None:
         with st.chat_message(message["role"], avatar=avatar):
             st.markdown(message["content"])
 
+    # Display Triage Menu if this is a new session (messages is empty)
+    if len(st.session_state.messages) == 0:
+        display_triage_menu(api_key)
+    
     # Chat input at the bottom
     if user_input := st.chat_input("What is on your mind?"):
         # Validate API key
